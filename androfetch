@@ -1,0 +1,154 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+# Nerd font is preferred.
+# Author : laraib07 (https://github.com/laraib07)
+
+readonly CACHE_DIR="$HOME/.cache/androfetch"
+readonly CACHE_FILE="$CACHE_DIR/cache"
+
+# Colors
+G='\033[1;32m' #green
+W='\033[1;37m' #bold white
+off='\033[0m'  #simple white
+
+# checking cache dir
+if ! [ -d "$CACHE_DIR" ];then
+  mkdir -p "$CACHE_DIR"
+fi
+
+
+## FUNCTIONS
+
+#Info printing
+function fetch() {
+  # Hide the cursor and disable line wrap.
+  printf '\e[?25l\e[?7l'
+  printf "
+  ${G}      ╲ ▁▂▂▂▁ ╱        ${user}${W}@${G}localhost
+  ${G}      ▄███████▄        ${W}-----------------
+  ${G}     ▄██ ███ ██▄       ${W}\uf6a6${G}  OS${off}: ${os}
+  ${G}    ▄███████████▄      ${W}\uf6c3${G}  Host${off}: ${model}
+  ${G} ▄█ ▄▄▄▄▄▄▄▄▄▄▄▄▄ █▄   ${W}\uf83c${G}  Kernel${off}: ${kernel}
+  ${G} ██ █████████████ ██   ${W}\uf49b${G}  Uptime${off}: ${uptime}
+  ${G} ██ █████████████ ██   ${W}\uf8d6${G}  Packages${off}: ${pkg}
+  ${G} ██ █████████████ ██   ${W}\ue7a2${G}  Shell${off}: ${shell}
+  ${G}    █████████████      ${W}\uf489${G}  Terminal${off}: termux
+  ${G}     ███████████       ${W}\uf2db${G}  Chipset${off}: ${chips}
+  ${G}      ██     ██        ${W}\ue266${G}  CPU${off}: ${cpuid}
+  ${G}      ██     ██${off}
+  "
+  printf "\e[?25h\e[?7h\n" # unhide cursor
+}
+
+
+function show_help() {
+  printf "Androfetch, yet another fetching tool but for android.\n"
+  printf "Usage: androfetch [-hcn]
+  -h       print this usage.
+  -c       build new cache.
+  -n       set user name.\n"
+}
+
+
+function source_cache() {
+  if [ -f "$CACHE_FILE" ];then
+    source "$CACHE_FILE"
+  fi
+}
+
+
+function set_name() {
+  if [ -f "$CACHE_FILE" ];then
+    sed -i "0,/^user.*/{s//user=\"$1\"/}" "$CACHE_FILE"
+  else
+    printf "$(basename "$0"): build cache first. Run without any options.\n"
+  fi
+}
+
+
+function get_shell() {
+  case ${shell:=${SHELL##*/}} in
+    bash)
+      ver=$("$SHELL" -c "printf %s \"\$BASH_VERSION\"")
+      shell+=" "${ver/-*}
+      shell=${shell/\(*\)}
+      ;;
+
+    zsh)
+      shell=$("$SHELL" --version)
+      shell=${shell% *} # removing extra stuff
+      ;;
+
+    fish)
+      ver=$("$SHELL" --version)
+      shell+=" ${ver##* }"
+      ;;
+    esac
+}
+
+
+function load_variables() {
+  #Packages
+  pkg="$(dpkg-query -W | wc -l) (dpkg)"
+
+  #Uptime
+  uptime=$(uptime -p)
+  uptime=${uptime:3} # removing 'up '
+  uptime=${uptime/hours/hrs}
+  uptime=${uptime/minutes/mins}
+
+  #shell
+  get_shell
+
+  # checking cache
+  if ! [ -f "$CACHE_FILE" ];then
+
+    #user
+    user=${user:=$(logname)}
+    printf "user=\"${user}\"\n" > "$CACHE_FILE"
+
+    #model
+    model=$(getprop ro.product.manufacturer)" "$(getprop ro.product.model)
+    printf "model=\"${model}\"\n" >> "$CACHE_FILE"
+
+    #OS
+    os="Android $(getprop ro.build.version.release)"
+    printf "os=\"${os}\"\n" >> "$CACHE_FILE"
+
+    #kernel
+    kernel=$(uname -r)
+    kernel=${kernel%%-*}
+    printf "kernel=\"${kernel}\"\n" >> "$CACHE_FILE"
+
+
+    #CPU and chipset
+    cpuid=$(cat /proc/cpuinfo|grep "Hardware")
+    cpuid=${cpuid##?*: }
+    cpuid=${cpuid%,*}
+    printf "cpuid=\"${cpuid}\"\n" >> "$CACHE_FILE"
+
+    chips=$(getprop ro.board.platform)
+    printf "chips=\"${chips}\"\n" >> "$CACHE_FILE"
+  fi
+}
+
+
+# sourcing cache -: it must be above getopts
+source_cache
+
+
+while getopts ":hcn:" arg ; do
+  case "${arg}" in
+    h ) show_help; exit 0 ;;
+    c ) rm -f "$CACHE_FILE" ;;
+    n ) set_name "$OPTARG" ; exit 0;;
+    \?) printf "$(basename "$0"): unknown option.\n";exit 1 ;;
+  esac
+done
+
+
+## Start fetching
+load_variables
+fetch
+
+exit 0
