@@ -11,11 +11,6 @@ G='\033[1;32m' #green
 W='\033[1;37m' #bold white
 off='\033[0m'  #simple white
 
-# checking cache dir
-if ! [ -d "$CACHE_DIR" ];then
-  mkdir -p "$CACHE_DIR"
-fi
-
 
 ## FUNCTIONS
 
@@ -23,49 +18,86 @@ fi
 function fetch() {
   # Hide the cursor and disable line wrap.
   printf '\e[?25l\e[?7l'
-  printf "
-  ${G}      ╲ ▁▂▂▂▁ ╱        ${user}${W}@${G}localhost
-  ${G}      ▄███████▄        ${W}-----------------
-  ${G}     ▄██ ███ ██▄       ${W}\uf6a6${G}  OS${off}: ${os}
-  ${G}    ▄███████████▄      ${W}\uf6c3${G}  Host${off}: ${model}
-  ${G} ▄█ ▄▄▄▄▄▄▄▄▄▄▄▄▄ █▄   ${W}\uf83c${G}  Kernel${off}: ${kernel}
-  ${G} ██ █████████████ ██   ${W}\uf49b${G}  Uptime${off}: ${uptime}
-  ${G} ██ █████████████ ██   ${W}\uf8d6${G}  Packages${off}: ${pkg}
-  ${G} ██ █████████████ ██   ${W}\ue7a2${G}  Shell${off}: ${shell}
-  ${G}    █████████████      ${W}\uf489${G}  Terminal${off}: termux
-  ${G}     ███████████       ${W}\uf2db${G}  Chipset${off}: ${chips}
-  ${G}      ██     ██        ${W}\ue266${G}  CPU${off}: ${cpuid}
-  ${G}      ██     ██${off}
-  "
+  printf "${G}      ╲ ▁▂▂▂▁ ╱        ${user}${W}@${G}localhost \n"
+  printf "${G}      ▄███████▄        ${W}----------------- \n"
+  printf "${G}     ▄██ ███ ██▄       ${i_os}OS${off}: ${os} \n"
+  printf "${G}    ▄███████████▄      ${i_host}Host${off}: ${model} \n"
+  printf "${G} ▄█ ▄▄▄▄▄▄▄▄▄▄▄▄▄ █▄   ${i_ker}Kernel${off}: ${kernel} \n"
+  printf "${G} ██ █████████████ ██   ${i_up}Uptime${off}: ${uptime} \n"
+  printf "${G} ██ █████████████ ██   ${i_pkg}Packages${off}: ${pkg} \n"
+  printf "${G} ██ █████████████ ██   ${i_sh}Shell${off}: ${shell} \n"
+  printf "${G}    █████████████      ${i_term}Terminal${off}: termux \n"
+  printf "${G}     ███████████       ${i_chip}Chipset${off}: ${chips} \n"
+  printf "${G}      ██     ██        ${i_cpu}CPU${off}: ${cpuid} \n"
+  printf "${G}      ██     ██        ${off}\n"
+
   printf "\e[?25h\e[?7h\n" # unhide cursor
 }
 
 
 function show_help() {
-  printf "Androfetch, yet another fetching tool but for android.\n"
-  printf "Usage: androfetch [-hcn]
-  -h       print this usage.
-  -c       build new cache.
-  -n       set user name.\n"
+  printf "A pretty system information tool written in bash for termux on android.\n"
+  printf "Usage: androfetch [-hci] [-n name]
+  -h\t print this usage.
+  -c\t build new cache.
+  -i\t toggle icon visibility.
+  -n\t set user name.\n"
 }
 
 
-function source_cache() {
-  if [ -f "$CACHE_FILE" ];then
-    source "$CACHE_FILE"
-  fi
+function error() {
+  printf "$(basename "$0"): $*\n" >&2
+  exit 1
 }
 
 
+# Meslo Nerd font powerline icons
+# if you don't use above font you can toggle
+# icons to disable it with ’androfetch -i’
+# by default its enabled.
+function load_icons() {
+  # 2 white-spaces are intentional to make whole output pretty with reasonable spacing
+  i_os="${W}\uf6a6${G}  "
+  i_host="${W}\uf6c3${G}  "
+  i_ker="${W}\uf83c${G}  "
+  i_up="${W}\uf49b${G}  "
+  i_pkg="${W}\uf8d6${G}  "
+  i_sh="${W}\ue7a2${G}  "
+  i_term="${W}\uf489${G}  "
+  i_chip="${W}\uf2db${G}  "
+  i_cpu="${W}\ue266${G}  "
+}
+
+
+# funtion to set name to be displayed while fetching.
+# Note: Don't set name on first run.
+# let the cache be build first.
 function set_name() {
   if [ -f "$CACHE_FILE" ];then
     sed -i "0,/^user.*/{s//user=\"$1\"/}" "$CACHE_FILE"
   else
-    printf "$(basename "$0"): build cache first. Run without any options.\n"
+    error "build cache first. Run without any option."
   fi
 }
 
 
+# toggle icon visibility if icons don't render well
+function toggle_icons() {
+  if [ -f "$CACHE_FILE" ];then
+    if [[ "$show_icons" == true ]];then
+      sed -i "0,/^show_icons.*/{s//show_icons=false/}" "$CACHE_FILE"
+    else
+      sed -i "0,/^show_icons.*/{s//show_icons=true/}" "$CACHE_FILE"
+    fi
+
+  else
+    error "build cache first. Run without any option."
+  fi
+}
+
+
+# Get shell name used by user
+# and get version info if its zsh, bash or fish.
 function get_shell() {
   case ${shell:=${SHELL##*/}} in
     bash)
@@ -83,10 +115,13 @@ function get_shell() {
       ver=$("$SHELL" --version)
       shell+=" ${ver##* }"
       ;;
-    esac
+  esac
 }
 
 
+# Load frequently updated info first and then check
+# cache for infrequent updated info like android
+# version cpu and chipset.
 function load_variables() {
   #Packages
   pkg="$(dpkg-query -W | wc -l) (dpkg)"
@@ -121,34 +156,57 @@ function load_variables() {
     printf "kernel=\"${kernel}\"\n" >> "$CACHE_FILE"
 
 
-    #CPU and chipset
+    #CPU
     cpuid=$(cat /proc/cpuinfo|grep "Hardware")
     cpuid=${cpuid##?*: }
     cpuid=${cpuid%,*}
     printf "cpuid=\"${cpuid}\"\n" >> "$CACHE_FILE"
 
+    #chipset
     chips=$(getprop ro.board.platform)
     printf "chips=\"${chips}\"\n" >> "$CACHE_FILE"
+
+    #show icons
+    show_icons=${show_icons:=true}
+    printf "show_icons=\"${show_icons}\"\n" >> "$CACHE_FILE"
   fi
 }
 
 
-# sourcing cache -: it must be above getopts
-source_cache
+function main() {
+  while getopts ":hcin:" arg ; do
+    case "${arg}" in
+      h ) show_help; exit 0 ;;
+      c ) rm -f "$CACHE_FILE" ;;
+      i ) toggle_icons ; exit 0 ;;
+      n ) set_name "$OPTARG" ; exit 0 ;;
+      \?) error "unknown option.";exit 1 ;;
+    esac
+  done
+
+  ## Start fetching
+  if [[ "$show_icons" == true ]]; then
+    load_icons
+  fi
+
+  load_variables
+  fetch
+
+  exit 0
+}
 
 
-while getopts ":hcn:" arg ; do
-  case "${arg}" in
-    h ) show_help; exit 0 ;;
-    c ) rm -f "$CACHE_FILE" ;;
-    n ) set_name "$OPTARG" ; exit 0;;
-    \?) printf "$(basename "$0"): unknown option.\n";exit 1 ;;
-  esac
-done
+# checking cache dir
+if ! [ -d "$CACHE_DIR" ];then
+  mkdir -p "$CACHE_DIR"
+fi
 
 
-## Start fetching
-load_variables
-fetch
+# sourcing cache -: it must be above main
+# otherwise username will be overwritten everytime
+# building new cache.
+if [ -f "$CACHE_FILE" ];then
+  source "$CACHE_FILE"
+fi
 
-exit 0
+main "$@"

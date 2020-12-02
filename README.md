@@ -4,6 +4,7 @@
 ![preview1](screenshots/s1.png)
 
 **Note**: Use meslo nerd font.
+ 
 
 ### created by [Laraib07](https://github.com/laraib07)
 
@@ -21,15 +22,17 @@ curl -O https://raw.githubusercontent.com/laraib07/androfetch/master/androfetch 
 
 ## Usage
 
-Usage : **androfetch**  [option]
+Usage : **androfetch**  [-hci] [-n name]
 
 option |   Description
 :-----:|:---------------------------:
   -h   |     print this usage
   -c   |     build new cache
+  -i   |     toggle icon visibility
   -n   |     set user name
 
 ## More Screenshots
 
 ![preview2](screenshots/s2.png)
 ![preview3](screenshots/s3.png)
+![preview4](screenshots/s4.png)
