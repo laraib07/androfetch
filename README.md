@@ -11,13 +11,13 @@
 ## Installation
 
 ```bash
-wget https://raw.githubusercontent.com/laraib07/androfetch/master/androfetch && chmod u+x androfetch && mv androfetch $PREFIX/bin/
+wget https://raw.githubusercontent.com/laraib07/androfetch/main/androfetch && chmod u+x androfetch && mv androfetch $PREFIX/bin/
 ```
 
 or
 
 ```bash
-curl -O https://raw.githubusercontent.com/laraib07/androfetch/master/androfetch && chmod u+x androfetch && mv androfetch $PREFIX/bin/
+curl -O https://raw.githubusercontent.com/laraib07/androfetch/main/androfetch && chmod u+x androfetch && mv androfetch $PREFIX/bin/
 ``` 
 
 ## Usage
