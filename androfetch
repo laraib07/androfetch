@@ -17,7 +17,7 @@ off='\033[0m'  #simple white
 #Info printing
 function fetch() {
   # Hide the cursor and disable line wrap.
-  printf '\e[?25l\e[?7l'
+  printf '\e[?25l\e[?7l\n'
   printf "${G}      ╲ ▁▂▂▂▁ ╱        ${user}${W}@${G}localhost \n"
   printf "${G}      ▄███████▄        ${W}----------------- \n"
   printf "${G}     ▄██ ███ ██▄       ${i_os}OS${off}: ${os} \n"
@@ -124,7 +124,7 @@ function get_shell() {
 # version cpu and chipset.
 function load_variables() {
   #Packages
-  pkg="$(dpkg-query -W | wc -l) (dpkg)"
+  pkg="$(grep -c "Package:" $PREFIX/var/lib/dpkg/status) (dpkg)"
 
   #Uptime
   uptime=$(uptime -p)
