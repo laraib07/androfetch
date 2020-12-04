@@ -132,9 +132,6 @@ function load_variables() {
   uptime=${uptime/hours/hrs}
   uptime=${uptime/minutes/mins}
 
-  #shell
-  get_shell
-
   # checking cache
   if ! [ -f "$CACHE_FILE" ];then
 
@@ -165,6 +162,10 @@ function load_variables() {
     #chipset
     chips=$(getprop ro.board.platform)
     printf "chips=\"${chips}\"\n" >> "$CACHE_FILE"
+
+    #shell
+    get_shell
+    printf "shell=\"${shell}\"\n" >> "$CACHE_FILE"
 
     #show icons
     show_icons=${show_icons:=true}
