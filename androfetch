@@ -175,6 +175,18 @@ function load_variables() {
 
 
 function main() {
+  # checking cache dir
+  if ! [ -d "$CACHE_DIR" ];then
+    mkdir -p "$CACHE_DIR"
+  fi
+
+  # sourcing cache -: it must be above getopts
+  # otherwise username will be overwritten everytime
+  # building new cache.
+  if [ -f "$CACHE_FILE" ];then
+    source "$CACHE_FILE"
+  fi
+
   while getopts ":hcin:" arg ; do
     case "${arg}" in
       h ) show_help; exit 0 ;;
@@ -195,19 +207,5 @@ function main() {
 
   exit 0
 }
-
-
-# checking cache dir
-if ! [ -d "$CACHE_DIR" ];then
-  mkdir -p "$CACHE_DIR"
-fi
-
-
-# sourcing cache -: it must be above main
-# otherwise username will be overwritten everytime
-# building new cache.
-if [ -f "$CACHE_FILE" ];then
-  source "$CACHE_FILE"
-fi
 
 main "$@"
