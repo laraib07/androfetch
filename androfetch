@@ -154,7 +154,7 @@ function load_variables() {
 
 
     #CPU
-    cpuid=$(cat /proc/cpuinfo|grep "Hardware")
+    cpuid=$(grep "Hardware" /proc/cpuinfo)
     cpuid=${cpuid##?*: }
     cpuid=${cpuid%,*}
     printf "cpuid=\"${cpuid}\"\n" >> "$CACHE_FILE"
