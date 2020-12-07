@@ -17,7 +17,7 @@ wget https://raw.githubusercontent.com/laraib07/androfetch/main/font.ttf && mv f
 or
 
 ```bash
-curl -O https://raw.githubusercontent.com/laraib07/androfetch/main/androfetch && mv font.ttf ~/.termux/
+curl -O https://raw.githubusercontent.com/laraib07/androfetch/main/font.ttf && mv font.ttf ~/.termux/
 ```
 
 2. Installing androfetch.
