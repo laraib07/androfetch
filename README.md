@@ -9,7 +9,18 @@
 ### created by [Laraib07](https://github.com/laraib07)
 
 ## Installation
+1. Install fonts ( optional , else disable icons with `androfetch -i` )
+```bash
+wget https://raw.githubusercontent.com/laraib07/androfetch/main/font.ttf && mv font.ttf ~/.termux/
+```
 
+or
+
+```bash
+curl -O https://raw.githubusercontent.com/laraib07/androfetch/main/androfetch && mv font.ttf ~/.termux/
+```
+
+2. Installing androfetch.
 ```bash
 wget https://raw.githubusercontent.com/laraib07/androfetch/main/androfetch && chmod u+x androfetch && mv androfetch $PREFIX/bin/
 ```

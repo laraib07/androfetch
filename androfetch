@@ -140,7 +140,7 @@ function load_variables() {
     printf "user=\"${user}\"\n" > "$CACHE_FILE"
 
     #model
-    model=$(getprop ro.product.manufacturer)" "$(getprop ro.product.model)
+    model="$(getprop ro.product.manufacturer) $(getprop ro.product.model)"
     printf "model=\"${model}\"\n" >> "$CACHE_FILE"
 
     #OS
