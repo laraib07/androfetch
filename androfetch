@@ -1,6 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-# Nerd font is preferred.
 # Author : laraib07 (https://github.com/laraib07)
 
 readonly CACHE_DIR="$HOME/.cache/androfetch"
@@ -11,27 +10,58 @@ G='\033[1;32m' #green
 W='\033[1;37m' #bold white
 off='\033[0m'  #simple white
 
+# ascii_logo
+ascii_logo="
+        ╲ ▁▂▂▂▁ ╱        
+        ▄███████▄        
+       ▄██ ███ ██▄       
+      ▄███████████▄      
+   ▄█ ▄▄▄▄▄▄▄▄▄▄▄▄▄ █▄   
+   ██ █████████████ ██   
+   ██ █████████████ ██   
+   ██ █████████████ ██   
+      █████████████      
+       ███████████       
+        ██     ██        
+        ██     ██        
+"
+
+
+# cursor positions - adjust these while changing ascii_logo
+top='\033[12A' # move 12 rows up(height of logo)
+f='\033[25C'    # move 25 clms forward
+savc='\033[s'   # save cursor pos
+resc='\033[u'   # restore cursor pos
+
 
 ## FUNCTIONS
 
 #Info printing
 function fetch() {
   # Hide the cursor and disable line wrap.
-  printf '\e[?25l\e[?7l\n'
-  printf "${G}      ╲ ▁▂▂▂▁ ╱        ${user}${W}@${G}localhost \n"
-  printf "${G}      ▄███████▄        ${W}----------------- \n"
-  printf "${G}     ▄██ ███ ██▄       ${i_os}OS${off}: ${os} \n"
-  printf "${G}    ▄███████████▄      ${i_host}Host${off}: ${model} \n"
-  printf "${G} ▄█ ▄▄▄▄▄▄▄▄▄▄▄▄▄ █▄   ${i_ker}Kernel${off}: ${kernel} \n"
-  printf "${G} ██ █████████████ ██   ${i_up}Uptime${off}: ${uptime} \n"
-  printf "${G} ██ █████████████ ██   ${i_pkg}Packages${off}: ${pkg} \n"
-  printf "${G} ██ █████████████ ██   ${i_sh}Shell${off}: ${shell} \n"
-  printf "${G}    █████████████      ${i_term}Terminal${off}: termux \n"
-  printf "${G}     ███████████       ${i_chip}Chipset${off}: ${chips} \n"
-  printf "${G}      ██     ██        ${i_cpu}CPU${off}: ${cpuid} \n"
-  printf "${G}      ██     ██        ${off}\n"
+  printf '\e[?25l\e[?7l'
 
-  printf "\e[?25h\e[?7h\n" # unhide cursor
+  printf "${G}${ascii_logo}" #print ascii_logo
+  printf "${savc}"       #save cursor pos
+  printf "${top}${f}"    #move cursor to top
+
+  printf "${G}${user}${W}@${G}localhost \n${f}"
+  printf "${W}----------------- \n${f}"
+
+  printf "${OS}: ${os} \n${f}"
+  printf "${HOST}: ${model} \n${f}"
+  printf "${KER}: ${kernel} \n${f}"
+  printf "${UPT}: ${uptime} \n${f}"
+  printf "${PKGS}: ${pkg} \n${f}"
+  printf "${SH}: ${shell} \n${f}"
+  printf "${TERMINAL}: termux \n${f}"
+  printf "${CHIP}: ${chips} \n${f}"
+  printf "${CPU}: ${cpuid} \n${f}"
+
+  printf "${resc}"       #restore cursor pos
+
+  # unhide the cursor and unable line wrap.
+  printf "\e[?25h\e[?7h\n" 
 }
 
 
@@ -51,21 +81,33 @@ function error() {
 }
 
 
-# Meslo Nerd font powerline icons
+# Meslo Nerd font preferred for powerline icons
 # if you don't use above font you can toggle
 # icons to disable it with ’androfetch -i’
 # by default its enabled.
-function load_icons() {
+function load_icons_texts() {
   # 2 white-spaces are intentional to make whole output pretty with reasonable spacing
-  i_os="${W}\uf6a6${G}  "
-  i_host="${W}\uf6c3${G}  "
-  i_ker="${W}\uf83c${G}  "
-  i_up="${W}\uf49b${G}  "
-  i_pkg="${W}\uf8d6${G}  "
-  i_sh="${W}\ue7a2${G}  "
-  i_term="${W}\uf489${G}  "
-  i_chip="${W}\uf2db${G}  "
-  i_cpu="${W}\ue266${G}  "
+  if [[ "$show_icons" == true ]]; then
+    OS="${W}\uf6a6  "
+    HOST="${W}\uf6c3  "
+    KER="${W}\uf83c  "
+    UPT="${W}\uf49b  "
+    PKGS="${W}\uf8d6  "
+    SH="${W}\ue7a2  "
+    TERMINAL="${W}\uf489  "
+    CHIP="${W}\uf2db  "
+    CPU="${W}\ue266  "
+  fi
+
+  OS="${OS}${G}OS${off}"
+  HOST="${HOST}${G}Host${off}"
+  KER="${KER}${G}Kernel${off}"
+  UPT="${UPT}${G}Uptime${off}"
+  PKGS="${PKGS}${G}Packages${off}"
+  SH="${SH}${G}Shell${off}"
+  TERMINAL="${TERMINAL}${G}Terminal${off}"
+  CHIP="${CHIP}${G}Chipset${off}"
+  CPU="${CPU}${G}CPU${off}"
 }
 
 
@@ -140,7 +182,7 @@ function load_variables() {
     printf "user=\"${user}\"\n" > "$CACHE_FILE"
 
     #model
-    model="$(getprop ro.product.manufacturer) $(getprop ro.product.model)"
+    model=$(getprop ro.product.manufacturer)" "$(getprop ro.product.model)
     printf "model=\"${model}\"\n" >> "$CACHE_FILE"
 
     #OS
@@ -154,7 +196,7 @@ function load_variables() {
 
 
     #CPU
-    cpuid=$(grep "Hardware" /proc/cpuinfo)
+    cpuid=$(cat /proc/cpuinfo|grep "Hardware")
     cpuid=${cpuid##?*: }
     cpuid=${cpuid%,*}
     printf "cpuid=\"${cpuid}\"\n" >> "$CACHE_FILE"
@@ -198,10 +240,7 @@ function main() {
   done
 
   ## Start fetching
-  if [[ "$show_icons" == true ]]; then
-    load_icons
-  fi
-
+  load_icons_texts
   load_variables
   fetch
 
