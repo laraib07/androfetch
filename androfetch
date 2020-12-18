@@ -59,6 +59,7 @@ function fetch() {
   printf "${CPU}: ${cpuid} \n${f}"
 
   printf "${resc}"       #restore cursor pos
+  printf "${off}"        #turn off colors
 
   # unhide the cursor and unable line wrap.
   printf "\e[?25h\e[?7h\n" 
