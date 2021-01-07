@@ -153,6 +153,8 @@ function get_shell() {
       shell+=" ${ver##* }"
       ;;
   esac
+
+  printf "${shell}"
 }
 
 
@@ -160,6 +162,7 @@ function get_shell() {
 function get_kernel() {
   kernel=$(uname -r)
   kernel=${kernel%%-*}
+  printf "${kernel}"
 }
 
 
@@ -168,6 +171,7 @@ function get_cpu() {
   cpuid=$(grep "Hardware" /proc/cpuinfo)
   cpuid=${cpuid##?*: }
   cpuid=${cpuid%,*}
+  printf "${cpuid}"
 }
 
 
@@ -192,10 +196,10 @@ function load_cache_variables() {
       [user]="${cache[user]:=$(logname)}" \
       [OS]="Android $(getprop ro.build.version.release)" \
       [Model]="$(getprop ro.product.manufacturer) $(getprop ro.product.model)" \
-      [Kernel]="$(get_kernel; printf "$kernel")" \
-      [Shell]="$(get_shell; printf "$shell")" \
       [Chipset]="$(getprop ro.board.platform)" \
-      [CPU]="$(get_cpu; printf "$cpuid")" \
+      [Kernel]="$(get_kernel)" \
+      [Shell]="$(get_shell)" \
+      [CPU]="$(get_cpu)" \
       [Icon_Toggle]="${cache[Icon_Toggle]:=1}" \
     )
 
