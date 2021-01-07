@@ -12,18 +12,18 @@ off='\033[0m'  #simple white
 
 # ascii_logo
 ascii_logo="
-        ╲ ▁▂▂▂▁ ╱        
-        ▄███████▄        
-       ▄██ ███ ██▄       
-      ▄███████████▄      
-   ▄█ ▄▄▄▄▄▄▄▄▄▄▄▄▄ █▄   
-   ██ █████████████ ██   
-   ██ █████████████ ██   
-   ██ █████████████ ██   
-      █████████████      
-       ███████████       
-        ██     ██        
-        ██     ██        
+        ╲ ▁▂▂▂▁ ╱
+        ▄███████▄
+       ▄██ ███ ██▄
+      ▄███████████▄
+   ▄█ ▄▄▄▄▄▄▄▄▄▄▄▄▄ █▄
+   ██ █████████████ ██
+   ██ █████████████ ██
+   ██ █████████████ ██
+      █████████████
+       ███████████
+        ██     ██
+        ██     ██
 "
 
 
@@ -45,24 +45,24 @@ function fetch() {
   printf "${savc}"       #save cursor pos
   printf "${top}${f}"    #move cursor to top
 
-  printf "${G}${user}${W}@${G}localhost \n${f}"
+  printf "${G}${variables[0]}${W}@${G}localhost \n${f}"
   printf "${W}----------------- \n${f}"
 
-  printf "${OS}: ${os} \n${f}"
-  printf "${HOST}: ${model} \n${f}"
-  printf "${KER}: ${kernel} \n${f}"
+  printf "${OS}: ${variables[1]} \n${f}"
+  printf "${HOST}: ${variables[2]} \n${f}"
+  printf "${KER}: ${variables[3]} \n${f}"
   printf "${UPT}: ${uptime} \n${f}"
   printf "${PKGS}: ${pkg} \n${f}"
-  printf "${SH}: ${shell} \n${f}"
+  printf "${SH}: ${variables[4]} \n${f}"
   printf "${TERMINAL}: termux \n${f}"
-  printf "${CHIP}: ${chips} \n${f}"
-  printf "${CPU}: ${cpuid} \n${f}"
+  printf "${CHIP}: ${variables[5]} \n${f}"
+  printf "${CPU}: ${variables[6]} \n${f}"
 
   printf "${resc}"       #restore cursor pos
   printf "${off}"        #turn off colors
 
   # unhide the cursor and unable line wrap.
-  printf "\e[?25h\e[?7h\n" 
+  printf "\e[?25h\e[?7h\n"
 }
 
 
@@ -88,7 +88,7 @@ function error() {
 # by default its enabled.
 function load_icons_texts() {
   # 2 white-spaces are intentional to make whole output pretty with reasonable spacing
-  if [[ "$show_icons" == true ]]; then
+  if [[ "${variables[7]}" == "1" ]]; then
     OS="${W}\uf6a6  "
     HOST="${W}\uf6c3  "
     KER="${W}\uf83c  "
@@ -112,30 +112,25 @@ function load_icons_texts() {
 }
 
 
-# funtion to set name to be displayed while fetching.
-# Note: Don't set name on first run.
-# let the cache be build first.
-function set_name() {
-  if [ -f "$CACHE_FILE" ];then
-    sed -i "0,/^user.*/{s//user=\"$1\"/}" "$CACHE_FILE"
+# toggle icon visibility if icons don't render well
+function toggle_icons() {
+  if [[ "${variables[7]}" == "0" ]];then
+    icon_toggle='1'
   else
-    error "build cache first. Run without any option."
+    icon_toggle='0'
   fi
+  user=${variables[0]} # preserve custom username
+  load_cache_variables
+  create_cache
 }
 
 
-# toggle icon visibility if icons don't render well
-function toggle_icons() {
-  if [ -f "$CACHE_FILE" ];then
-    if [[ "$show_icons" == true ]];then
-      sed -i "0,/^show_icons.*/{s//show_icons=false/}" "$CACHE_FILE"
-    else
-      sed -i "0,/^show_icons.*/{s//show_icons=true/}" "$CACHE_FILE"
-    fi
-
-  else
-    error "build cache first. Run without any option."
-  fi
+# Set custom user name
+function set_user() {
+  user=$1
+  icon_toggle=${variables[7]} # preserve icon_toggle's value
+  load_cache_variables
+  create_cache
 }
 
 
@@ -162,9 +157,22 @@ function get_shell() {
 }
 
 
-# Load frequently updated info first and then check
-# cache for infrequent updated info like android
-# version cpu and chipset.
+#Get kernel info
+function get_kernel() {
+  kernel=$(uname -sr)
+  kernel=${kernel%%-*}
+}
+
+
+#Get CPU info
+function get_cpu() {
+  cpuid=$(grep "Hardware" /proc/cpuinfo)
+  cpuid=${cpuid##?*: }
+  cpuid=${cpuid%,*}
+}
+
+
+# Load frequently updated info like packages and uptime
 function load_variables() {
   #Packages
   pkg="$(grep -c "Package:" $PREFIX/var/lib/dpkg/status) (dpkg)"
@@ -175,71 +183,61 @@ function load_variables() {
   uptime=${uptime/hours/hrs}
   uptime=${uptime/minutes/mins}
 
-  # checking cache
-  if ! [ -f "$CACHE_FILE" ];then
-
-    #user
-    user=${user:=$(logname)}
-    printf "user=\"${user}\"\n" > "$CACHE_FILE"
-
-    #model
-    model="$(getprop ro.product.manufacturer) $(getprop ro.product.model)"
-    printf "model=\"${model}\"\n" >> "$CACHE_FILE"
-
-    #OS
-    os="Android $(getprop ro.build.version.release)"
-    printf "os=\"${os}\"\n" >> "$CACHE_FILE"
-
-    #kernel
-    kernel=$(uname -r)
-    kernel=${kernel%%-*}
-    printf "kernel=\"${kernel}\"\n" >> "$CACHE_FILE"
-
-
-    #CPU
-    cpuid=$(grep "Hardware" /proc/cpuinfo)
-    cpuid=${cpuid##?*: }
-    cpuid=${cpuid%,*}
-    printf "cpuid=\"${cpuid}\"\n" >> "$CACHE_FILE"
-
-    #chipset
-    chips=$(getprop ro.board.platform)
-    printf "chips=\"${chips}\"\n" >> "$CACHE_FILE"
-
-    #shell
-    get_shell
-    printf "shell=\"${shell}\"\n" >> "$CACHE_FILE"
-
-    #show icons
-    show_icons=${show_icons:=true}
-    printf "show_icons=\"${show_icons}\"\n" >> "$CACHE_FILE"
-  fi
 }
 
 
+#Load infrequent updated info like android
+# version cpu chipset and icon_toggle.
+function load_cache_variables() {
+    #array=(User OS Model Kernel Shell Chipset CPU Icon_toggle)
+    variables=( \
+      "${user:=$(logname)}" \
+      "Android $(getprop ro.build.version.release)" \
+      "$(getprop ro.product.manufacturer) $(getprop ro.product.model)" \
+      "$(get_kernel; printf "$kernel")" \
+      "$(get_shell; printf "$shell")" \
+      "$(getprop ro.board.platform)" \
+      "$(get_cpu; printf "$cpuid")" \
+      "${icon_toggle:="0"}" \
+    )
+
+}
+
+# Create cache
+function create_cache() {
+  printf "variables=($(for i in "${variables[@]}";do printf "'$i' ";done))\n" > "$CACHE_FILE"
+}
+
+# Driver code
 function main() {
   # checking cache dir
   if ! [ -d "$CACHE_DIR" ];then
     mkdir -p "$CACHE_DIR"
   fi
 
-  # sourcing cache -: it must be above getopts
-  # otherwise username will be overwritten everytime
-  # building new cache.
-  if [ -f "$CACHE_FILE" ];then
-    source "$CACHE_FILE"
+  # load cache variables first if cache don't exists
+  # else source cache
+  # It's important to do this before anything else
+  # So custom username and icon_toggle's value don't get deleted
+  if [ ! -f "$CACHE_FILE" ];then
+    load_cache_variables
+  else
+    source $CACHE_FILE
   fi
 
   while getopts ":hcin:" arg ; do
     case "${arg}" in
       h ) show_help; exit 0 ;;
-      c ) rm -f "$CACHE_FILE" ;;
-      i ) toggle_icons ; exit 0 ;;
-      n ) set_name "$OPTARG" ; exit 0 ;;
+      c ) load_cache_variables; create_cache ;;
+      i ) toggle_icons ;;
+      n ) set_user "$OPTARG" ;;
       \?) error "unknown option.";exit 1 ;;
     esac
   done
 
+  if [ ! -f "$CACHE_FILE" ];then
+    create_cache
+  fi
   ## Start fetching
   load_icons_texts
   load_variables
