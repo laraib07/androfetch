@@ -4,7 +4,7 @@
 
 readonly CACHE_DIR="$HOME/.cache/androfetch"
 readonly CACHE_FILE="$CACHE_DIR/cache"
-declare -A variables
+declare -A cache
 
 # Colors
 G='\033[1;32m' #green
@@ -46,18 +46,18 @@ function fetch() {
   printf "${savc}"       #save cursor pos
   printf "${top}${f}"    #move cursor to top
 
-  printf "${G}${variables[user]}${W}@${G}localhost \n${f}"
+  printf "${G}${cache[user]}${W}@${G}localhost \n${f}"
   printf "${W}----------------- \n${f}"
 
-  printf "${OS}: ${variables[OS]} \n${f}"
-  printf "${HOST}: ${variables[Model]} \n${f}"
-  printf "${KER}: ${variables[Kernel]} \n${f}"
+  printf "${OS}: ${cache[OS]} \n${f}"
+  printf "${HOST}: ${cache[Model]} \n${f}"
+  printf "${KER}: ${cache[Kernel]} \n${f}"
   printf "${UPT}: ${uptime} \n${f}"
   printf "${PKGS}: ${pkg} \n${f}"
-  printf "${SH}: ${variables[Shell]} \n${f}"
+  printf "${SH}: ${cache[Shell]} \n${f}"
   printf "${TERMINAL}: termux \n${f}"
-  printf "${CHIP}: ${variables[Chipset]} \n${f}"
-  printf "${CPU}: ${variables[CPU]} \n${f}"
+  printf "${CHIP}: ${cache[Chipset]} \n${f}"
+  printf "${CPU}: ${cache[CPU]} \n${f}"
 
   printf "${resc}"       #restore cursor pos
   printf "${off}"        #turn off colors
@@ -89,7 +89,7 @@ function error() {
 # by default its enabled.
 function load_icons_texts() {
   # 2 white-spaces are intentional to make whole output pretty with reasonable spacing
-  if [[ "${variables[Icon_Toggle]}" == "1" ]]; then
+  if [[ "${cache[Icon_Toggle]}" == "1" ]]; then
     OS="${W}\uf6a6  "
     HOST="${W}\uf6c3  "
     KER="${W}\uf83c  "
@@ -115,10 +115,10 @@ function load_icons_texts() {
 
 # toggle icon visibility if icons don't render well
 function toggle_icons() {
-  if [[ "${variables[Icon_Toggle]}" == "0" ]];then
-    variables[Icon_Toggle]=1
+  if [[ "${cache[Icon_Toggle]}" == "0" ]];then
+    cache[Icon_Toggle]=1
   else
-    variables[Icon_Toggle]=0
+    cache[Icon_Toggle]=0
   fi
   load_cache_variables
   create_cache
@@ -127,7 +127,7 @@ function toggle_icons() {
 
 # Set custom user name
 function set_user() {
-  variables[user]=$1
+  cache[user]=$1
   load_cache_variables
   create_cache
 }
@@ -188,22 +188,22 @@ function load_variables() {
 #Load infrequent updated info like android
 # version cpu chipset and icon_toggle.
 function load_cache_variables() {
-    variables=( \
-      [user]="${variables[user]:=$(logname)}" \
+    cache=( \
+      [user]="${cache[user]:=$(logname)}" \
       [OS]="Android $(getprop ro.build.version.release)" \
       [Model]="$(getprop ro.product.manufacturer) $(getprop ro.product.model)" \
       [Kernel]="$(get_kernel; printf "$kernel")" \
       [Shell]="$(get_shell; printf "$shell")" \
       [Chipset]="$(getprop ro.board.platform)" \
       [CPU]="$(get_cpu; printf "$cpuid")" \
-      [Icon_Toggle]="${variables[Icon_Toggle]:=1}" \
+      [Icon_Toggle]="${cache[Icon_Toggle]:=1}" \
     )
 
 }
 
 # Create cache
 function create_cache() {
-  printf "variables=($(for i in "${!variables[@]}";do printf "[$i]='${variables[$i]}' ";done))\n" > "$CACHE_FILE"
+  printf "cache=($(for i in "${!cache[@]}";do printf "[$i]='${cache[$i]}' ";done))\n" > "$CACHE_FILE"
 }
 
 # Driver code

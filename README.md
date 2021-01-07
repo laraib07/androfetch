@@ -4,11 +4,18 @@
 ![preview1](screenshots/s1.png)
 
 **Note**: Use meslo nerd font.
- 
+
 
 ### created by [Laraib07](https://github.com/laraib07)
 
+
 ## Installation
+
+**Note**: Delete previous cache manually with 
+```bash
+rm -rf ~/.cache/androfetch/cache
+```
+
 1. Install fonts ( optional , else disable icons with `androfetch -i` )
 ```bash
 wget https://raw.githubusercontent.com/laraib07/androfetch/main/font.ttf && mv font.ttf ~/.termux/
