@@ -230,7 +230,7 @@ function main() {
   while getopts ":hcin:" arg ; do
     case "${arg}" in
       h ) show_help; exit 0 ;;
-      c ) rm $CACHE_FILE ;;
+      c ) rm $CACHE_FILE; load_cache_variables ;;
       i ) toggle_icons ;;
       n ) set_user "$OPTARG" ;;
       \?) error "unknown option.";exit 1 ;;
