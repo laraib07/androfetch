@@ -4,6 +4,7 @@
 
 readonly CACHE_DIR="$HOME/.cache/androfetch"
 readonly CACHE_FILE="$CACHE_DIR/cache"
+declare -A variables
 
 # Colors
 G='\033[1;32m' #green
@@ -45,18 +46,18 @@ function fetch() {
   printf "${savc}"       #save cursor pos
   printf "${top}${f}"    #move cursor to top
 
-  printf "${G}${variables[0]}${W}@${G}localhost \n${f}"
+  printf "${G}${variables[user]}${W}@${G}localhost \n${f}"
   printf "${W}----------------- \n${f}"
 
-  printf "${OS}: ${variables[1]} \n${f}"
-  printf "${HOST}: ${variables[2]} \n${f}"
-  printf "${KER}: ${variables[3]} \n${f}"
+  printf "${OS}: ${variables[OS]} \n${f}"
+  printf "${HOST}: ${variables[Model]} \n${f}"
+  printf "${KER}: ${variables[Kernel]} \n${f}"
   printf "${UPT}: ${uptime} \n${f}"
   printf "${PKGS}: ${pkg} \n${f}"
-  printf "${SH}: ${variables[4]} \n${f}"
+  printf "${SH}: ${variables[Shell]} \n${f}"
   printf "${TERMINAL}: termux \n${f}"
-  printf "${CHIP}: ${variables[5]} \n${f}"
-  printf "${CPU}: ${variables[6]} \n${f}"
+  printf "${CHIP}: ${variables[Chipset]} \n${f}"
+  printf "${CPU}: ${variables[CPU]} \n${f}"
 
   printf "${resc}"       #restore cursor pos
   printf "${off}"        #turn off colors
@@ -88,7 +89,7 @@ function error() {
 # by default its enabled.
 function load_icons_texts() {
   # 2 white-spaces are intentional to make whole output pretty with reasonable spacing
-  if [[ "${variables[7]}" == "1" ]]; then
+  if [[ "${variables[Icon_Toggle]}" == "1" ]]; then
     OS="${W}\uf6a6  "
     HOST="${W}\uf6c3  "
     KER="${W}\uf83c  "
@@ -114,12 +115,11 @@ function load_icons_texts() {
 
 # toggle icon visibility if icons don't render well
 function toggle_icons() {
-  if [[ "${variables[7]}" == "0" ]];then
-    icon_toggle='1'
+  if [[ "${variables[Icon_Toggle]}" == "0" ]];then
+    variables[Icon_Toggle]=1
   else
-    icon_toggle='0'
+    variables[Icon_Toggle]=0
   fi
-  user=${variables[0]} # preserve custom username
   load_cache_variables
   create_cache
 }
@@ -127,8 +127,7 @@ function toggle_icons() {
 
 # Set custom user name
 function set_user() {
-  user=$1
-  icon_toggle=${variables[7]} # preserve icon_toggle's value
+  variables[user]=$1
   load_cache_variables
   create_cache
 }
@@ -159,7 +158,7 @@ function get_shell() {
 
 #Get kernel info
 function get_kernel() {
-  kernel=$(uname -sr)
+  kernel=$(uname -r)
   kernel=${kernel%%-*}
 }
 
@@ -189,23 +188,22 @@ function load_variables() {
 #Load infrequent updated info like android
 # version cpu chipset and icon_toggle.
 function load_cache_variables() {
-    #array=(User OS Model Kernel Shell Chipset CPU Icon_toggle)
     variables=( \
-      "${user:=$(logname)}" \
-      "Android $(getprop ro.build.version.release)" \
-      "$(getprop ro.product.manufacturer) $(getprop ro.product.model)" \
-      "$(get_kernel; printf "$kernel")" \
-      "$(get_shell; printf "$shell")" \
-      "$(getprop ro.board.platform)" \
-      "$(get_cpu; printf "$cpuid")" \
-      "${icon_toggle:="0"}" \
+      [user]="${variables[user]:=$(logname)}" \
+      [OS]="Android $(getprop ro.build.version.release)" \
+      [Model]="$(getprop ro.product.manufacturer) $(getprop ro.product.model)" \
+      [Kernel]="$(get_kernel; printf "$kernel")" \
+      [Shell]="$(get_shell; printf "$shell")" \
+      [Chipset]="$(getprop ro.board.platform)" \
+      [CPU]="$(get_cpu; printf "$cpuid")" \
+      [Icon_Toggle]="${variables[Icon_Toggle]:=1}" \
     )
 
 }
 
 # Create cache
 function create_cache() {
-  printf "variables=($(for i in "${variables[@]}";do printf "'$i' ";done))\n" > "$CACHE_FILE"
+  printf "variables=($(for i in "${!variables[@]}";do printf "[$i]='${variables[$i]}' ";done))\n" > "$CACHE_FILE"
 }
 
 # Driver code
@@ -228,7 +226,7 @@ function main() {
   while getopts ":hcin:" arg ; do
     case "${arg}" in
       h ) show_help; exit 0 ;;
-      c ) load_cache_variables; create_cache ;;
+      c ) rm $CACHE_FILE ;;
       i ) toggle_icons ;;
       n ) set_user "$OPTARG" ;;
       \?) error "unknown option.";exit 1 ;;
