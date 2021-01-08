@@ -173,7 +173,6 @@ function toggle_icons() {
   else
     cache[Icon_Toggle]=0
   fi
-  load_cache_variables
   create_cache
 }
 
@@ -182,11 +181,10 @@ function toggle_icons() {
 # using reset as username will set it to default
 function set_user() {
   if [[ "$1" == "reset" ]]; then
-    unset cache[user]
+    cache[user]=$(logname)
   else
     cache[user]=$1
   fi
-  load_cache_variables
   create_cache
 }
 

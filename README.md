@@ -17,7 +17,7 @@
 
 ## Installation
 
-**Note**: Delete previous cache manually with 
+**Note**: Delete previous cache manually with
 ```bash
 rm -rf ~/.cache/androfetch/cache
 ```
@@ -42,7 +42,7 @@ or
 
 ```bash
 curl -O https://raw.githubusercontent.com/laraib07/androfetch/main/androfetch && chmod u+x androfetch && mv androfetch $PREFIX/bin/
-``` 
+```
 
 ## Usage
 
@@ -61,7 +61,7 @@ option |   Description
 To set custom logo, save logo in a file without quoting or commenting
 Add whitespaces to make every line equal in width.
 Do not use broad logo which will cover significant space.
-although you can use as many lines as you like like.
+although you can use as many lines as you like.
 
 See sample_logo in this repo for reference.
 
