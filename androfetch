@@ -11,29 +11,6 @@ G='\033[1;32m' #green
 W='\033[1;37m' #bold white
 off='\033[0m'  #simple white
 
-# ascii_logo
-ascii_logo="
-        ╲ ▁▂▂▂▁ ╱
-        ▄███████▄
-       ▄██ ███ ██▄
-      ▄███████████▄
-   ▄█ ▄▄▄▄▄▄▄▄▄▄▄▄▄ █▄
-   ██ █████████████ ██
-   ██ █████████████ ██
-   ██ █████████████ ██
-      █████████████
-       ███████████
-        ██     ██
-        ██     ██
-"
-
-
-# cursor positions - adjust these while changing ascii_logo
-top='\033[12A' # move 12 rows up(height of logo)
-f='\033[25C'    # move 25 clms forward
-savc='\033[s'   # save cursor pos
-resc='\033[u'   # restore cursor pos
-
 
 ## FUNCTIONS
 
@@ -42,24 +19,11 @@ function fetch() {
   # Hide the cursor and disable line wrap.
   printf '\e[?25l\e[?7l'
 
-  printf "${G}${ascii_logo}" #print ascii_logo
-  printf "${savc}"       #save cursor pos
-  printf "${top}${f}"    #move cursor to top
-
-  printf "${G}${cache[user]}${W}@${G}localhost \n${f}"
-  printf "${W}----------------- \n${f}"
-
-  printf "${OS}: ${cache[OS]} \n${f}"
-  printf "${HOST}: ${cache[Model]} \n${f}"
-  printf "${KER}: ${cache[Kernel]} \n${f}"
-  printf "${UPT}: ${uptime} \n${f}"
-  printf "${PKGS}: ${pkg} \n${f}"
-  printf "${SH}: ${cache[Shell]} \n${f}"
-  printf "${TERMINAL}: termux \n${f}"
-  printf "${CHIP}: ${cache[Chipset]} \n${f}"
-  printf "${CPU}: ${cache[CPU]} \n${f}"
-
-  printf "${resc}"       #restore cursor pos
+  # loop up to length of ascii_logo array
+  # print logo and strings according to index
+  for i in "${!ascii_logo[@]}";do
+    printf "${G}${ascii_logo[$i]} ${info[$i]}\n"  #print ascii_logo and info strings
+  done
   printf "${off}"        #turn off colors
 
   # unhide the cursor and unable line wrap.
@@ -69,11 +33,12 @@ function fetch() {
 
 function show_help() {
   printf "A pretty system information tool written in bash for termux on android.\n"
-  printf "Usage: androfetch [-hci] [-n name]
+  printf "Usage: androfetch [-hci] [-n name/reset] [-l filepath/reset]
   -h\t print this usage.
   -c\t build new cache.
   -i\t toggle icon visibility.
-  -n\t set user name.\n"
+  -n\t set user name.
+  -l\t set logo.\n"
 }
 
 
@@ -83,11 +48,13 @@ function error() {
 }
 
 
-# Meslo Nerd font preferred for powerline icons
-# if you don't use above font you can toggle
-# icons to disable it with ’androfetch -i’
-# by default its enabled.
-function load_icons_texts() {
+# Create an array of all the strings to be fetched
+# add icons if toggled
+function load_icons_and_strings() {
+  # Meslo Nerd font preferred for powerline icons
+  # if you don't use above font you can toggle
+  # icons to disable it with ’androfetch -i’
+  # by default its enabled.
   # 2 white-spaces are intentional to make whole output pretty with reasonable spacing
   if [[ "${cache[Icon_Toggle]}" == "1" ]]; then
     OS="${W}\uf6a6  "
@@ -101,15 +68,98 @@ function load_icons_texts() {
     CPU="${W}\ue266  "
   fi
 
-  OS="${OS}${G}OS${off}"
-  HOST="${HOST}${G}Host${off}"
-  KER="${KER}${G}Kernel${off}"
-  UPT="${UPT}${G}Uptime${off}"
-  PKGS="${PKGS}${G}Packages${off}"
-  SH="${SH}${G}Shell${off}"
-  TERMINAL="${TERMINAL}${G}Terminal${off}"
-  CHIP="${CHIP}${G}Chipset${off}"
-  CPU="${CPU}${G}CPU${off}"
+  info=( \
+    "" \
+    "${G}${cache[user]}${W}@${G}localhost" \
+    "${W}-----------------" \
+    "${OS}${G}OS${off}: ${cache[OS]}" \
+    "${HOST}${G}Host${off}: ${cache[Model]}" \
+    "${KER}${G}Kernel${off}: ${cache[Kernel]}" \
+    "${UPT}${G}Uptime${off}: ${uptime}" \
+    "${PKGS}${G}Packages${off}: ${pkg}" \
+    "${SH}${G}Shell${off}: ${cache[Shell]}" \
+    "${TERMINAL}${G}Terminal${off}: termux" \
+    "${CHIP}${G}Chipset${off}: ${cache[Chipset]}" \
+    "${CPU}${G}CPU${off}: ${cache[CPU]}" \
+  )
+}
+
+
+# Set logo to default logo
+function load_default_logo() {
+
+  # default ascii_logo
+  ascii_logo=( \
+  "       ╲ ▁▂▂▂▁ ╱       " \
+  "       ▄███████▄       " \
+  "      ▄██ ███ ██▄      " \
+  "     ▄███████████▄     " \
+  "  ▄█ ▄▄▄▄▄▄▄▄▄▄▄▄▄ █▄  " \
+  "  ██ █████████████ ██  " \
+  "  ██ █████████████ ██  " \
+  "  ██ █████████████ ██  " \
+  "     █████████████     " \
+  "      ███████████      " \
+  "       ██     ██       " \
+  "       ██     ██       " \
+  )
+
+}
+
+
+# If custom logo array has less indexes than info array
+# Make it equal to number of indexes of info array
+# Else info will not be indented properly
+function match_arr_length() {
+  # this will add lines containing whitespace to custom_logo
+
+  logo_width=${#ascii_logo[0]} #width of logo (columns)
+
+  while [ ${#ascii_logo[@]} -lt ${#info[@]} ]; do
+      ascii_logo+=("$(printf "%${logo_width}s")") # number of whitespaces is equal to logo width
+  done
+}
+
+
+# Set custom logo
+# use default logo if reset is passed in argument
+# it will create an array from file with every line as
+# seperate element
+#
+
+# Logo file format
+# check sample_logo file
+#
+#
+#       ╲ ▁▂▂▂▁ ╱
+#       ▄███████▄
+#      ▄██ ███ ██▄
+#     ▄███████████▄
+#  ▄█ ▄▄▄▄▄▄▄▄▄▄▄▄▄ █▄
+#  ██ █████████████ ██
+#  ██ █████████████ ██
+#  ██ █████████████ ██
+#     █████████████
+#      ███████████
+#       ██     ██
+#       ██     ██
+
+# without quoting or commenting
+# add whitespaces to make every line equal in width
+# do not use broad logo which will cover significant space.
+# although you can use as many lines as you like like
+# command: androfetch -l <filepath>
+function set_logo() {
+  if [[ "$1" == "reset" ]]; then
+      load_default_logo
+  else
+    unset ascii_logo #unset current logo
+    while IFS= read -r line; do
+      ascii_logo+=("$line")
+    done < "$1"
+    match_arr_length
+  fi
+  create_cache
 }
 
 
@@ -126,8 +176,13 @@ function toggle_icons() {
 
 
 # Set custom user name
+# using reset as username will set it to default
 function set_user() {
-  cache[user]=$1
+  if [[ "$1" == "reset" ]]; then
+    unset cache[user]
+  else
+    cache[user]=$1
+  fi
   load_cache_variables
   create_cache
 }
@@ -161,8 +216,7 @@ function get_shell() {
 #Get kernel info
 function get_kernel() {
   kernel=$(uname -r)
-  kernel=${kernel%%-*}
-  printf "${kernel}"
+  printf "${kernel%%-*}"
 }
 
 
@@ -170,13 +224,12 @@ function get_kernel() {
 function get_cpu() {
   cpuid=$(grep "Hardware" /proc/cpuinfo)
   cpuid=${cpuid##?*: }
-  cpuid=${cpuid%,*}
-  printf "${cpuid}"
+  printf "${cpuid%,*}"
 }
 
 
 # Load frequently updated info like packages and uptime
-function load_variables() {
+function load_non_cache_variables() {
   #Packages
   pkg="$(grep -c "Package:" $PREFIX/var/lib/dpkg/status) (dpkg)"
 
@@ -205,9 +258,14 @@ function load_cache_variables() {
 
 }
 
+
 # Create cache
 function create_cache() {
+  # For info
   printf "cache=($(for i in "${!cache[@]}";do printf "[$i]='${cache[$i]}' ";done))\n" > "$CACHE_FILE"
+
+  # For icon
+  printf "ascii_logo=($(for i in "${ascii_logo[@]}";do printf "\'$i\' ";done))\n" >> "$CACHE_FILE"
 }
 
 # Driver code
@@ -222,27 +280,41 @@ function main() {
   # It's important to do this before anything else
   # So custom username and icon_toggle's value don't get deleted
   if [ ! -f "$CACHE_FILE" ];then
+    # This block is executed only on very first run
+    # It will set all default options
     load_cache_variables
+    load_default_logo # use default logo
   else
     source $CACHE_FILE
   fi
 
-  while getopts ":hcin:" arg ; do
+  while getopts ":hcin:l:" arg ; do
     case "${arg}" in
       h ) show_help; exit 0 ;;
       c ) rm $CACHE_FILE; load_cache_variables ;;
       i ) toggle_icons ;;
       n ) set_user "$OPTARG" ;;
-      \?) error "unknown option.";exit 1 ;;
+      l ) use_custom_logo=1; logo_file="$OPTARG" ;;
+      : ) error "option needs an argument.";;
+      \?) error "unknown option." ;;
     esac
   done
 
+  # Create cache if not found
   if [ ! -f "$CACHE_FILE" ];then
     create_cache
   fi
+
+  load_non_cache_variables # load non-cached variables
+  load_icons_and_strings # create array of strings to fetch
+
+  # Always set logo after everything else, just before fetching
+  # to align info with logo
+  if [[ -n $use_custom_logo ]];then
+      set_logo $logo_file
+  fi
+
   ## Start fetching
-  load_icons_texts
-  load_variables
   fetch
 
   exit 0
