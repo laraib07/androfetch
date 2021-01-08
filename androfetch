@@ -153,11 +153,15 @@ function set_logo() {
   if [[ "$1" == "reset" ]]; then
       load_default_logo
   else
-    unset ascii_logo #unset current logo
-    while IFS= read -r line; do
-      ascii_logo+=("$line")
-    done < "$1"
-    match_arr_length
+    if [ -f "$1" ];then
+      unset ascii_logo #unset current logo
+      while IFS= read -r line; do
+        ascii_logo+=("$line")
+      done < "$1"
+      match_arr_length
+    else
+      error "file not found"
+    fi
   fi
   create_cache
 }
