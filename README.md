@@ -8,6 +8,10 @@
 
 ### created by [Laraib07](https://github.com/laraib07)
 
+## Table of contents
+* [Installation](#installation)
+* [Usage](#usage)
+* [Screenshots](#more-screenshots)
 
 ## Installation
 
