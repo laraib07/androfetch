@@ -22,7 +22,7 @@ function fetch() {
   # loop up to length of ascii_logo array
   # print logo and strings according to index
   for i in "${!ascii_logo[@]}";do
-    printf "${G}${ascii_logo[$i]} ${info[$i]}\n"  #print ascii_logo and info strings
+    printf "${G}${ascii_logo[$i]} ${info[$i]} \n"  #print ascii_logo and info strings
   done
   printf "${off}"        #turn off colors
 
