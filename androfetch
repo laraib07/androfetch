@@ -17,7 +17,7 @@ off='\033[0m'  #simple white
 #Info printing
 function fetch() {
   # Hide the cursor and disable line wrap.
-  printf '\e[?25l\e[?7l'
+  printf '\e[?25l\e[?7l\n'
 
   # loop up to length of ascii_logo array
   # print logo and strings according to index
@@ -69,7 +69,6 @@ function load_icons_and_strings() {
   fi
 
   info=( \
-    "" \
     "${G}${cache[user]}${W}@${G}localhost" \
     "${W}-----------------" \
     "${OS}${G}OS${off}: ${cache[OS]}" \
