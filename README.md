@@ -40,7 +40,7 @@ curl -O https://raw.githubusercontent.com/laraib07/androfetch/main/androfetch &&
 
 ## Usage
 
-Usage : **androfetch**  [-hci] [-n name]
+Usage : **androfetch**  [-hci] [-n name|reset] [ -l filepath|reset]
 
 option |   Description
 :-----:|:---------------------------:
@@ -48,6 +48,7 @@ option |   Description
   -c   |     build new cache
   -i   |     toggle icon visibility
   -n   |     set user name
+  -l   |     set logo
 
 ## More Screenshots
 
