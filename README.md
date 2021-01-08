@@ -11,7 +11,9 @@
 ## Table of contents
 * [Installation](#installation)
 * [Usage](#usage)
+* [Custom logo](#custom-logo)
 * [Screenshots](#more-screenshots)
+
 
 ## Installation
 
@@ -54,8 +56,24 @@ option |   Description
   -n   |     set user name
   -l   |     set logo
 
+## Custom logo
+
+To set custom logo, save logo in a file without quoting or commenting
+Add whitespaces to make every line equal in width.
+Do not use broad logo which will cover significant space.
+although you can use as many lines as you like like.
+
+See sample_logo in this repo for reference.
+
+After saving it use following command to set it.
+
+```bash
+androfetch -l <filepath>
+```
+
 ## More Screenshots
 
 ![preview2](screenshots/s2.png)
 ![preview3](screenshots/s3.png)
 ![preview4](screenshots/s4.png)
+
