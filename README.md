@@ -46,7 +46,7 @@ curl -O https://raw.githubusercontent.com/laraib07/androfetch/main/androfetch &&
 
 ## Usage
 
-Usage : **androfetch**  [-hci] [-n name|reset] [ -l filepath|reset]
+Usage : **androfetch**  [-hci] [-n [name]] [ -l [filepath]]
 
 option |   Description
 :-----:|:---------------------------:

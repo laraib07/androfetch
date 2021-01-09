@@ -33,7 +33,7 @@ function fetch() {
 
 function show_help() {
   printf "A pretty system information tool written in bash for termux on android.\n"
-  printf "Usage: androfetch [-hci] [-n name/reset] [-l filepath/reset]
+  printf "Usage: androfetch [-hci] [-n [name]] [-l [filepath]]
   -h\t print this usage.
   -c\t build new cache.
   -i\t toggle icon visibility.
@@ -149,7 +149,7 @@ function match_arr_length() {
 # although you can use as many lines as you like like
 # command: androfetch -l <filepath>
 function set_logo() {
-  if [[ "$1" == "reset" ]]; then
+  if [[ -z "$1" ]]; then
       load_default_logo
   else
     if [ -f "$1" ];then
@@ -180,7 +180,7 @@ function toggle_icons() {
 # Set custom user name
 # using reset as username will set it to default
 function set_user() {
-  if [[ "$1" == "reset" ]]; then
+  if [[ -z "$1" ]]; then
     cache[user]=$(logname)
   else
     cache[user]=$1
@@ -269,6 +269,18 @@ function create_cache() {
   printf "ascii_logo=($(for i in "${ascii_logo[@]}";do printf "\'$i\' ";done))\n" >> "$CACHE_FILE"
 }
 
+
+function getopts_get_optional_argument() {
+    eval next_token=\${$OPTIND}
+    if [[ -n $next_token && $next_token != -* ]]; then
+        OPTIND=$((OPTIND + 1))
+        OPTARG=$next_token
+    else
+        OPTARG=""
+    fi
+}
+
+
 # Driver code
 function main() {
   # checking cache dir
@@ -289,13 +301,20 @@ function main() {
     source $CACHE_FILE
   fi
 
-  while getopts ":hcin:l:" arg ; do
+  while getopts ":hcinl" arg ; do
     case "${arg}" in
       h ) show_help; exit 0 ;;
       c ) rm $CACHE_FILE; load_cache_variables ;;
       i ) toggle_icons ;;
-      n ) set_user "$OPTARG" ;;
-      l ) use_custom_logo=1; logo_file="$OPTARG" ;;
+      n )
+          getopts_get_optional_argument $@
+          set_user "$OPTARG"
+          ;;
+      l )
+          use_custom_logo=1
+          getopts_get_optional_argument $@
+          logo_file="$OPTARG"
+          ;;
       : ) error "option needs an argument.";;
       \?) error "unknown option." ;;
     esac
