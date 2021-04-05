@@ -53,6 +53,7 @@ option |   Description
   -h   |     print this usage
   -c   |     build new cache
   -i   |     toggle icon visibility
+  -t   |     toggle descriptive title visibility
   -n   |     set user name
   -l   |     set logo
 
@@ -70,10 +71,16 @@ After saving it use following command to set it.
 ```bash
 androfetch -l <filepath>
 ```
+To set it to default use,
+```bash
+androfetch -l 
+```
 
 ## More Screenshots
 
 ![preview2](screenshots/s2.png)
 ![preview3](screenshots/s3.png)
 ![preview4](screenshots/s4.png)
+![preview5](screenshots/s5.png)
+![preview6](screenshots/s6.png)
 
