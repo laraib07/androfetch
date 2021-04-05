@@ -53,7 +53,7 @@ option |   Description
   -h   |     print this usage
   -c   |     build new cache
   -i   |     toggle icon visibility
-  -t   |     toggle descriptive title visibility
+  -t   |     toggle description title visibility
   -n   |     set user name
   -l   |     set logo
 

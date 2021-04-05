@@ -37,7 +37,7 @@ function show_help() {
   -h\t print this usage.
   -c\t build new cache.
   -i\t toggle icon visibility.
-  -t\t toggle descriptive title visibility.
+  -t\t toggle description title visibility.
   -n\t set user name.
   -l\t set logo.\n"
 }
@@ -50,7 +50,7 @@ function error() {
 
 
 # Create an array of all the strings to be fetched
-# add icons and descriptive title if toggled
+# add icons and description title if toggled
 function load_icons_and_strings() {
   # Meslo Nerd font preferred for powerline icons
   # if you don't use above font you can toggle
@@ -69,7 +69,7 @@ function load_icons_and_strings() {
     CPU="${W}\ue266  "
   fi
 
-  # Load descriptive titles
+  # Load description titles
   if [[ "${cache[Desc_Title_Toggle]}" == "1" ]]; then
     OS="${OS}${G}OS${off}: "
     HOST="${HOST}${G}Host${off}: "
