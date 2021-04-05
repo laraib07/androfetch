@@ -33,10 +33,11 @@ function fetch() {
 
 function show_help() {
   printf "A pretty system information tool written in bash for termux on android.\n"
-  printf "Usage: androfetch [-hci] [-n [name]] [-l [filepath]]
+  printf "Usage: androfetch [-hcit] [-n [name]] [-l [filepath]]
   -h\t print this usage.
   -c\t build new cache.
   -i\t toggle icon visibility.
+  -t\t toggle descriptive title visibility.
   -n\t set user name.
   -l\t set logo.\n"
 }
@@ -49,7 +50,7 @@ function error() {
 
 
 # Create an array of all the strings to be fetched
-# add icons if toggled
+# add icons and descriptive title if toggled
 function load_icons_and_strings() {
   # Meslo Nerd font preferred for powerline icons
   # if you don't use above font you can toggle
@@ -68,18 +69,31 @@ function load_icons_and_strings() {
     CPU="${W}\ue266  "
   fi
 
+  # Load descriptive titles
+  if [[ "${cache[Desc_Title_Toggle]}" == "1" ]]; then
+    OS="${OS}${G}OS${off}: "
+    HOST="${HOST}${G}Host${off}: "
+    KER="${KER}${G}Kernal${off}: "
+    UPT="${UPT}${G}Uptime${off}: "
+    PKGS="${PKGS}${G}Packages${off}: "
+    SH="${SH}${G}Shell${off}: "
+    TERMINAL="${TERMINAL}${G}Terminal${off}: "
+    CHIP="${CHIP}${G}Chipset${off}: "
+    CPU="${CPU}${G}CPU${off}: "
+  fi
+
   info=( \
     "${G}${cache[user]}${W}@${G}localhost" \
     "${W}-----------------" \
-    "${OS}${G}OS${off}: ${cache[OS]}" \
-    "${HOST}${G}Host${off}: ${cache[Model]}" \
-    "${KER}${G}Kernel${off}: ${cache[Kernel]}" \
-    "${UPT}${G}Uptime${off}: ${uptime}" \
-    "${PKGS}${G}Packages${off}: ${pkg}" \
-    "${SH}${G}Shell${off}: ${cache[Shell]}" \
-    "${TERMINAL}${G}Terminal${off}: termux" \
-    "${CHIP}${G}Chipset${off}: ${cache[Chipset]}" \
-    "${CPU}${G}CPU${off}: ${cache[CPU]}" \
+    "${OS}${off}${cache[OS]}" \
+    "${HOST}${off}${cache[Model]}" \
+    "${KER}${off}${cache[Kernel]}" \
+    "${UPT}${off}${uptime}" \
+    "${PKGS}${off}${pkg}" \
+    "${SH}${off}${cache[Shell]}" \
+    "${TERMINAL}${off}termux" \
+    "${CHIP}${off}${cache[Chipset]}" \
+    "${CPU}${off}${cache[CPU]}" \
   )
 }
 
@@ -166,12 +180,12 @@ function set_logo() {
 }
 
 
-# toggle icon visibility if icons don't render well
-function toggle_icons() {
-  if [[ "${cache[Icon_Toggle]}" == "0" ]];then
-    cache[Icon_Toggle]=1
+# toggle values of different components.
+function toggle_value() {
+  if [[ "${cache[$1]}" == "0" ]];then
+    cache[$1]=1
   else
-    cache[Icon_Toggle]=0
+    cache[$1]=0
   fi
   create_cache
 }
@@ -255,6 +269,7 @@ function load_cache_variables() {
       [Shell]="$(get_shell)" \
       [CPU]="$(get_cpu)" \
       [Icon_Toggle]="${cache[Icon_Toggle]:=1}" \
+      [Desc_Title_Toggle]="${cache[Desc_Title_Toggle]:=1}" \
     )
 
 }
@@ -301,11 +316,12 @@ function main() {
     source $CACHE_FILE
   fi
 
-  while getopts ":hcinl" arg ; do
+  while getopts ":hcinlt" arg ; do
     case "${arg}" in
       h ) show_help; exit 0 ;;
       c ) rm $CACHE_FILE; load_cache_variables ;;
-      i ) toggle_icons ;;
+      i ) toggle_value "Icon_Toggle" ;;
+      t ) toggle_value "Desc_Title_Toggle" ;;
       n )
           getopts_get_optional_argument $@
           set_user "$OPTARG"
