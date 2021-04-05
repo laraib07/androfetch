@@ -73,7 +73,7 @@ function load_icons_and_strings() {
   if [[ "${cache[Desc_Title_Toggle]}" == "1" ]]; then
     OS="${OS}${G}OS${off}: "
     HOST="${HOST}${G}Host${off}: "
-    KER="${KER}${G}Kernal${off}: "
+    KER="${KER}${G}Kernel${off}: "
     UPT="${UPT}${G}Uptime${off}: "
     PKGS="${PKGS}${G}Packages${off}: "
     SH="${SH}${G}Shell${off}: "
