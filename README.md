@@ -24,13 +24,15 @@ rm -rf ~/.cache/androfetch/cache
 
 1. Install fonts ( optional , else disable icons with `androfetch -i` )
 ```bash
-wget https://raw.githubusercontent.com/laraib07/androfetch/main/font.ttf && mv font.ttf ~/.termux/
+mkdir ~/.fonts
+wget https://raw.githubusercontent.com/laraib07/androfetch/main/font.ttf && mv font.ttf ~/.fonts/
 ```
 
 or
 
 ```bash
-curl -O https://raw.githubusercontent.com/laraib07/androfetch/main/font.ttf && mv font.ttf ~/.termux/
+mkdir ~/.fonts
+curl -O https://raw.githubusercontent.com/laraib07/androfetch/main/font.ttf && mv font.ttf ~/.fonts/
 ```
 
 2. Installing androfetch.
