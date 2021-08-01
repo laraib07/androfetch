@@ -22,7 +22,7 @@ function fetch() {
   # loop up to length of ascii_logo array
   # print logo and strings according to index
   for i in "${!ascii_logo[@]}";do
-    printf "${G}${ascii_logo[$i]} ${info[$i]} \n"  #print ascii_logo and info strings
+    printf "${G}${ascii_logo[$i]}${off} ${info[$i]} \n"  #print ascii_logo and info strings
   done
   printf "${off}"        #turn off colors
 
@@ -58,42 +58,42 @@ function load_icons_and_strings() {
   # by default its enabled.
   # 2 white-spaces are intentional to make whole output pretty with reasonable spacing
   if [[ "${cache[Icon_Toggle]}" == "1" ]]; then
-    OS="${W}\uf6a6  "
-    HOST="${W}\uf6c3  "
-    KER="${W}\uf83c  "
-    UPT="${W}\uf49b  "
-    PKGS="${W}\uf8d6  "
-    SH="${W}\ue7a2  "
-    TERMINAL="${W}\uf489  "
-    CHIP="${W}\uf2db  "
-    CPU="${W}\ue266  "
+    OS="${W}\uf6a6  ${off}"
+    HOST="${W}\uf6c3  ${off}"
+    KER="${W}\uf83c  ${off}"
+    UPT="${W}\uf49b  ${off}"
+    PKGS="${W}\uf8d6  ${off}"
+    SH="${W}\ue7a2  ${off}"
+    TERMINAL="${W}\uf489  ${off}"
+    CHIP="${W}\uf2db  ${off}"
+    CPU="${W}\ue266  ${off}"
   fi
 
   # Load description titles
   if [[ "${cache[Desc_Title_Toggle]}" == "1" ]]; then
-    OS="${OS}${G}OS${off}: "
-    HOST="${HOST}${G}Host${off}: "
-    KER="${KER}${G}Kernel${off}: "
-    UPT="${UPT}${G}Uptime${off}: "
-    PKGS="${PKGS}${G}Packages${off}: "
-    SH="${SH}${G}Shell${off}: "
-    TERMINAL="${TERMINAL}${G}Terminal${off}: "
-    CHIP="${CHIP}${G}Chipset${off}: "
-    CPU="${CPU}${G}CPU${off}: "
+    OS+="${G}OS${off}: "
+    HOST+="${G}Host${off}: "
+    KER+="${G}Kernel${off}: "
+    UPT+="${G}Uptime${off}: "
+    PKGS+="${G}Packages${off}: "
+    SH+="${G}Shell${off}: "
+    TERMINAL+="${G}Terminal${off}: "
+    CHIP+="${G}Chipset${off}: "
+    CPU+="${G}CPU${off}: "
   fi
 
   info=( \
     "${G}${cache[user]}${W}@${G}localhost" \
     "${W}-----------------" \
-    "${OS}${off}${cache[OS]}" \
-    "${HOST}${off}${cache[Model]}" \
-    "${KER}${off}${cache[Kernel]}" \
-    "${UPT}${off}${uptime}" \
-    "${PKGS}${off}${pkg}" \
-    "${SH}${off}${cache[Shell]}" \
-    "${TERMINAL}${off}termux" \
-    "${CHIP}${off}${cache[Chipset]}" \
-    "${CPU}${off}${cache[CPU]}" \
+    "${OS}${cache[OS]}" \
+    "${HOST}${cache[Model]}" \
+    "${KER}${cache[Kernel]}" \
+    "${UPT}${uptime}" \
+    "${PKGS}${pkg}" \
+    "${SH}${cache[Shell]}" \
+    "${TERMINAL}termux" \
+    "${CHIP}${cache[Chipset]}" \
+    "${CPU}${cache[CPU]}" \
   )
 }
 
@@ -251,8 +251,11 @@ function load_non_cache_variables() {
   #Uptime
   uptime=$(uptime -p)
   uptime=${uptime:3} # removing 'up '
-  uptime=${uptime/hours/hrs}
-  uptime=${uptime/minutes/mins}
+  uptime=${uptime//s/} # removing every 's' 
+  uptime=${uptime/week/w}
+  uptime=${uptime/day/d}
+  uptime=${uptime/hour/h}
+  uptime=${uptime/minute/m}
 
 }
 
